@@ -49,36 +49,33 @@ ul{list-style:none;margin:0;padding:0;}
 .nav a.current{opacity:.45;}
 
 /* ---------------- STREAM (ARBEIDER) ---------------- */
-.stream{
-  display:flex;flex-direction:column;align-items:center;
-  gap:var(--gap);
-  padding-top:var(--s9);
-  padding-bottom:var(--s9);
-}
-.project{position:relative;width:var(--img-w);}
-.project img{width:100%;height:auto;}
-
-.p-overlay{
-  position:absolute;inset:0;
+/* Hver stein tar hele skjermen. Bildene ruller forbi, teksten i margene står fast og byttes. */
+html.snap{scroll-snap-type:y mandatory;}
+.stream{padding:0;}
+.project{
+  position:relative;
+  height:100vh;height:100svh;
   display:flex;align-items:center;justify-content:center;
-  color:#fff;letter-spacing:0.04em;font-size:11px;font-weight:500;
-  opacity:0;transition:opacity .3s ease;pointer-events:none;
-  text-shadow:0 1px 10px rgba(0,0,0,.4);
+  scroll-snap-align:center;scroll-snap-stop:always;
 }
-.project:hover .p-overlay{opacity:.9;}
+.project a{display:block;}
+.project img{
+  width:auto;height:auto;
+  max-width:min(var(--img-w),calc(100vw - 2*var(--edge)));
+  max-height:74vh;max-height:74svh;
+}
 
-.ann{position:absolute;top:50%;transform:translateY(-50%);display:flex;white-space:nowrap;}
-.ann-left{
-  left:calc(-1 * (50vw - var(--img-w)/2) + var(--edge));
-  width:calc(50vw - var(--img-w)/2 - var(--edge));
-  justify-content:flex-start;
+.ann-fixed{
+  position:fixed;left:0;right:0;top:50%;transform:translateY(-50%);
+  z-index:20;pointer-events:none;
+  mix-blend-mode:difference;color:#fff;
+  transition:opacity .22s ease;
 }
-.ann-right{
-  right:calc(-1 * (50vw - var(--img-w)/2) + var(--edge));
-  width:calc(50vw - var(--img-w)/2 - var(--edge));
-  justify-content:space-between;
-}
-.ann-left .a-index{width:140px;}
+.ann-fixed.swap{opacity:0;}
+.af{position:absolute;top:0;display:flex;white-space:nowrap;}
+.af-left{left:var(--edge);}
+.af-left .af-index{width:140px;}
+.af-right{right:var(--edge);gap:var(--s7);}
 
 /* ---------------- PROSESS ---------------- */
 /* Landskapsmedie dratt helt ut til høyre kant. Tekst forankret til venstre. */
@@ -137,7 +134,7 @@ ul{list-style:none;margin:0;padding:0;}
 /* ---------------- TABLET ---------------- */
 @media (max-width:1023px){
   :root{--img-w:clamp(320px,56vw,520px);}
-  .ann-left .a-index{width:70px;}
+  .af-left .af-index{width:70px;}
   .proc-media{width:82%;}
   .proc-text{width:30vw;}
 }
@@ -145,13 +142,10 @@ ul{list-style:none;margin:0;padding:0;}
 /* ---------------- MOBILE ---------------- */
 @media (max-width:767px){
   :root{--img-w:calc(100vw - 2*var(--edge));--gap:var(--s7);}
-  .stream{padding-top:var(--s9);padding-bottom:var(--s8);}
-
-  .ann{position:static;transform:none;width:auto;margin-top:12px;}
-  .ann-left{gap:var(--s5);}
-  .ann-left .a-index{width:auto;}
-  .ann-right{justify-content:space-between;margin-top:6px;}
-  .project:hover .p-overlay{opacity:0;}
+  .project img{max-height:62vh;max-height:62svh;}
+  .ann-fixed{top:auto;bottom:var(--s5);transform:none;}
+  .af-left .af-index{width:auto;margin-right:var(--s5);}
+  .af-right{gap:var(--s4);}
 
   /* prosess stabler: tekst over, fullbredde landskapsmedie under */
   .process{padding-top:var(--s9);}
