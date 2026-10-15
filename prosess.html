@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -25,53 +25,32 @@
     </nav>
   </header>
 
-  <!-- PROSESS -->
+  <!-- PROSESS
+       Hver video er én <section class="proc-item" data-src="...">.
+       Legg videoen i mappen video/ med det navnet som står i data-src.
+       Tittelen (opptaksdato, f.eks. SEP 2026) leses automatisk fra videoens metadata.
+       Trenger du å overstyre datoen: legg til data-date="SEP 2026".
+       Flere videoer: kopier en <section>-blokk og endre data-src. -->
   <main class="process">
 
-    <section class="proc-item">
-      <div class="proc-text">
-        <div class="t-index cap">P01</div>
-        <div class="t-title cap">Kirke</div>
-        <div class="t-ref">
-          <span class="lbl cap">Arbeid</span>
-          <span class="cap">GRV_UK_EP_ST401</span>
-        </div>
-      </div>
-      <div class="proc-media">
-        <!-- Bytt .ph med: <video src="video/01-kirke.mp4" autoplay muted loop playsinline></video> -->
-        <div class="ph">Video — landskap 16:9</div>
-      </div>
+    <section class="proc-item" data-src="video/01.mp4">
+      <div class="proc-media"><div class="ph">Video — landskap 16:9</div></div>
     </section>
 
-    <section class="proc-item">
-      <div class="proc-text">
-        <div class="t-index cap">P02</div>
-        <div class="t-title cap">Over</div>
-        <div class="t-ref">
-          <span class="lbl cap">Arbeid</span>
-          <span class="cap">GRV_UK_EP_ST402</span>
-        </div>
-      </div>
-      <div class="proc-media">
-        <div class="ph">Video — landskap 16:9</div>
-      </div>
+    <section class="proc-item" data-src="video/02.mp4">
+      <div class="proc-media"><div class="ph">Video — landskap 16:9</div></div>
     </section>
 
-    <section class="proc-item">
-      <div class="proc-text">
-        <div class="t-index cap">P03</div>
-        <div class="t-title cap">Skrå</div>
-        <div class="t-ref">
-          <span class="lbl cap">Arbeid</span>
-          <span class="cap">GRV_UK_EP_ST410</span>
-        </div>
-      </div>
-      <div class="proc-media">
-        <div class="ph">Video — landskap 16:9</div>
-      </div>
+    <section class="proc-item" data-src="video/03.mp4">
+      <div class="proc-media"><div class="ph">Video — landskap 16:9</div></div>
     </section>
 
   </main>
+
+  <!-- FAST TEKST (som på ARBEIDER): nummer + tittel, byttes når videoen bytter -->
+  <div class="ann-fixed" aria-live="polite">
+    <div class="af af-left"><span class="cap af-index">01</span><span class="cap af-title">—</span></div>
+  </div>
 
   <!-- FOOTER BAR -->
   <div class="footbar">
@@ -79,5 +58,91 @@
     <span class="cap">© 2026</span>
   </div>
 
+<script>
+(function(){
+  var items=[].slice.call(document.querySelectorAll('.proc-item'));
+  var box=document.querySelector('.ann-fixed');
+  var elI=box.querySelector('.af-index'),elT=box.querySelector('.af-title');
+  var MONTHS=['JAN','FEB','MAR','APR','MAI','JUN','JUL','AUG','SEP','OKT','NOV','DES'];
+  var active=-1,timer;
+
+  /* ---------- les opptaksdato (mvhd creation_time) fra MP4 via små Range-forespørsler ---------- */
+  function range(url,a,b){
+    return fetch(url,{headers:{Range:'bytes='+a+'-'+b}}).then(function(r){
+      if(r.status!==206){ if(r.body&&r.body.cancel)r.body.cancel(); throw new Error('no range'); }
+      return r.arrayBuffer();
+    });
+  }
+  function fourcc(dv,o){return String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3));}
+  function readCreation(url){
+    function walk(off,guard){
+      if(guard>60)return Promise.reject();
+      return range(url,off,off+15).then(function(buf){
+        var dv=new DataView(buf); if(dv.byteLength<8)throw new Error('eof');
+        var size=dv.getUint32(0),type=fourcc(dv,4);
+        if(size===1&&dv.byteLength>=16)size=dv.getUint32(8)*4294967296+dv.getUint32(12);
+        if(type==='moov'){
+          return range(url,off,off+255).then(function(b2){
+            var d2=new DataView(b2);
+            for(var i=0;i<d2.byteLength-16;i++){
+              if(fourcc(d2,i)==='mvhd'){
+                var v=d2.getUint8(i+4),t=v===1?d2.getUint32(i+12)*4294967296+d2.getUint32(i+16):d2.getUint32(i+8);
+                if(!t)throw new Error('empty');
+                return new Date((t-2082844800)*1000);
+              }
+            }
+            throw new Error('no mvhd');
+          });
+        }
+        if(!size)throw new Error('size0');
+        return walk(off+size,guard+1);
+      });
+    }
+    return walk(0,0);
+  }
+  function fmt(d){return MONTHS[d.getUTCMonth()]+' '+d.getUTCFullYear();}
+
+  /* ---------- sett inn video + tittel ---------- */
+  items.forEach(function(it,i){
+    it.dataset.index=('0'+(i+1)).slice(-2);
+    it.dataset.title=it.dataset.date?it.dataset.date.toUpperCase():'—';
+    var src=it.dataset.src; if(!src)return;
+    fetch(src,{method:'HEAD'}).then(function(r){
+      if(!r.ok)return;                                   /* ingen video ennå: behold plassholder */
+      var v=document.createElement('video');
+      v.src=src;v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='metadata';
+      it.querySelector('.proc-media').replaceChildren(v);
+      if('IntersectionObserver' in window){
+        new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)v.play().catch(function(){});else v.pause();});},{threshold:0.4}).observe(v);
+      }else{v.autoplay=true;}
+      if(!it.dataset.date){
+        readCreation(src).then(function(d){
+          it.dataset.title=fmt(d);
+          if(active===i)setText(i);
+        }).catch(function(){});
+      }
+    }).catch(function(){});
+  });
+
+  /* ---------- fast tekst som bytter ---------- */
+  function setText(k){elI.textContent=items[k].dataset.index;elT.textContent=items[k].dataset.title;}
+  function swap(k){
+    if(k===active)return; var first=active<0; active=k;
+    if(first){setText(k);return;}
+    box.classList.add('swap');clearTimeout(timer);
+    timer=setTimeout(function(){setText(k);box.classList.remove('swap');},150);
+  }
+  function nearest(){
+    var mid=window.innerHeight/2,best=0,bd=1e9;
+    items.forEach(function(it,i){var r=it.getBoundingClientRect(),d=Math.abs(r.top+r.height/2-mid);if(d<bd){bd=d;best=i;}});
+    return best;
+  }
+  var tick=false;
+  function onScroll(){if(tick)return;tick=true;requestAnimationFrame(function(){tick=false;swap(nearest());});}
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',onScroll);
+  swap(nearest());
+})();
+</script>
 </body>
 </html>
