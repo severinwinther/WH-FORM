@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="no" class="snap">
+<html lang="no" class="snap arbeider">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -26,43 +26,28 @@
   </header>
 
   <!-- STREAM -->
+  <div class="stage" aria-hidden="false">
+    <img class="shot" src="kirke.png" alt="Kirke">
+    <img class="shot" src="Over.png" alt="Over">
+    <img class="shot" src="Kors.png" alt="Kors">
+    <img class="shot" src="Himmel.png" alt="Himmel">
+    <img class="shot" src="Oval.png" alt="Oval">
+    <img class="shot" src="Skraa.png" alt="Skrå">
+    <img class="shot" src="Bue.png" alt="Bue">
+    <img class="shot" src="Fals.png" alt="Fals">
+    <img class="shot" src="Loft.png" alt="Løft">
+  </div>
+
   <main class="stream">
-    <section class="project" data-index="01" data-title="Kirke" data-material="Grønn marmor" data-year="2026">
-      <a href="#"><img src="kirke.png" alt="Kirke"></a>
-    </section>
-
-    <section class="project" data-index="02" data-title="Over" data-material="Rød granitt" data-year="2026">
-      <a href="#"><img src="Over.png" alt="Over"></a>
-    </section>
-
-    <section class="project" data-index="03" data-title="Kors" data-material="Blå naturstein" data-year="2026">
-      <a href="#"><img src="Kors.png" alt="Kors"></a>
-    </section>
-
-    <section class="project" data-index="04" data-title="Himmel" data-material="Grønn marmor" data-year="2026">
-      <a href="#"><img src="Himmel.png" alt="Himmel"></a>
-    </section>
-
-    <section class="project" data-index="05" data-title="Oval" data-material="Sort granitt" data-year="2026">
-      <a href="#"><img src="Oval.png" alt="Oval"></a>
-    </section>
-
-    <section class="project" data-index="06" data-title="Skrå" data-material="Blå naturstein" data-year="2026">
-      <a href="#"><img src="Skraa.png" alt="Skrå"></a>
-    </section>
-
-    <section class="project" data-index="07" data-title="Bue" data-material="Rød granitt" data-year="2026">
-      <a href="#"><img src="Bue.png" alt="Bue"></a>
-    </section>
-
-    <section class="project" data-index="08" data-title="Fals" data-material="Grå granitt" data-year="2026">
-      <a href="#"><img src="Fals.png" alt="Fals"></a>
-    </section>
-
-    <section class="project" data-index="09" data-title="Løft" data-material="Blå marmor" data-year="2026">
-      <a href="#"><img src="Loft.png" alt="Løft"></a>
-    </section>
-
+    <section class="project" data-index="01" data-title="Kirke" data-material="Grønn marmor" data-year="2026"></section>
+    <section class="project" data-index="02" data-title="Over" data-material="Rød granitt" data-year="2026"></section>
+    <section class="project" data-index="03" data-title="Kors" data-material="Blå naturstein" data-year="2026"></section>
+    <section class="project" data-index="04" data-title="Himmel" data-material="Grønn marmor" data-year="2026"></section>
+    <section class="project" data-index="05" data-title="Oval" data-material="Sort granitt" data-year="2026"></section>
+    <section class="project" data-index="06" data-title="Skrå" data-material="Blå naturstein" data-year="2026"></section>
+    <section class="project" data-index="07" data-title="Bue" data-material="Rød granitt" data-year="2026"></section>
+    <section class="project" data-index="08" data-title="Fals" data-material="Grå granitt" data-year="2026"></section>
+    <section class="project" data-index="09" data-title="Løft" data-material="Blå marmor" data-year="2026"></section>
   </main>
 
   <!-- FAST TEKST (byttes ved scrolling) -->
@@ -79,28 +64,41 @@
 
 <script>
 (function(){
+  var shots=[].slice.call(document.querySelectorAll('.shot'));
   var secs=[].slice.call(document.querySelectorAll('.project'));
   var box=document.querySelector('.ann-fixed');
-  if(!secs.length||!box)return;
+  var n=shots.length; if(!n)return;
   var el={i:box.querySelector('.af-index'),t:box.querySelector('.af-title'),m:box.querySelector('.af-material'),y:box.querySelector('.af-year')};
-  var cur=null,timer;
-  function show(sec){
-    if(sec===cur)return; cur=sec;
-    box.classList.add('swap');
-    clearTimeout(timer);
-    timer=setTimeout(function(){
-      el.i.textContent=sec.dataset.index;
-      el.t.textContent=sec.dataset.title;
-      el.m.textContent=sec.dataset.material;
-      el.y.textContent=sec.dataset.year;
-      box.classList.remove('swap');
-    },220);
+  var cur=-1,timer,ticking=false;
+  function setText(k){
+    var d=secs[k].dataset;
+    el.i.textContent=d.index;el.t.textContent=d.title;el.m.textContent=d.material;el.y.textContent=d.year;
   }
-  if(!('IntersectionObserver' in window))return;
-  var io=new IntersectionObserver(function(es){
-    es.forEach(function(e){if(e.isIntersecting)show(e.target);});
-  },{rootMargin:'-45% 0px -45% 0px',threshold:0});
-  secs.forEach(function(s){io.observe(s);});
+  function swap(k){
+    if(k===cur)return; var first=cur<0; cur=k;
+    if(first){setText(k);return;}
+    box.classList.add('swap'); clearTimeout(timer);
+    timer=setTimeout(function(){setText(k);box.classList.remove('swap');},260);
+  }
+  function ease(t){return t*t*(3-2*t);}
+  function frame(){
+    ticking=false;
+    var vh=window.innerHeight;
+    var p=window.scrollY/vh;
+    for(var i=0;i<n;i++){
+      var d=p-i, a=Math.abs(d);
+      var o=1-ease(Math.min(Math.max((a-0.12)/0.5,0),1));  /* tydelig holdt midt i hver steins skjerm */
+      var sc=1.04-0.04*(1-Math.min(a,1))+0.03*Math.min(a,1);
+      var ty=-d*5;                                          /* rolig drift i vh */
+      shots[i].style.opacity=o.toFixed(3);
+      shots[i].style.transform='translate3d(0,'+ty.toFixed(2)+'vh,0) scale('+sc.toFixed(4)+')';
+    }
+    swap(Math.min(n-1,Math.max(0,Math.round(p))));
+  }
+  function req(){if(!ticking){ticking=true;requestAnimationFrame(frame);}}
+  window.addEventListener('scroll',req,{passive:true});
+  window.addEventListener('resize',req);
+  frame();
 })();
 </script>
 </body>
