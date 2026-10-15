@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -57,13 +57,13 @@
   var n=secs.length; if(!n)return;
   var el={i:box.querySelector('.af-index'),t:box.querySelector('.af-title'),m:box.querySelector('.af-material'),y:box.querySelector('.af-year')};
   var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var K,PERSP,LERP=reduce?1:0.1;
-  var tops=[],heights=[],vh=0,cur=window.scrollY,running=false,active=-1,timer;
+  var K,PERSP,SMOOTH=reduce?1:0.16;
+  var tops=[],heights=[],vh=0,sm=window.scrollY,running=false,active=-1,timer,idle,touching=false;
 
   function measure(){
     vh=window.innerHeight;
     var mobile=window.innerWidth<768;
-    K=reduce?0:(mobile?15:28);       /* grader per skjermhøyde fra midten */
+    K=reduce?0:(mobile?15:28);
     PERSP=mobile?900:1300;
     var y=window.scrollY;
     secs.forEach(function(s,i){var r=s.getBoundingClientRect();tops[i]=r.top+y;heights[i]=r.height;});
@@ -75,25 +75,43 @@
     box.classList.add('swap');clearTimeout(timer);
     timer=setTimeout(function(){setText(k);box.classList.remove('swap');},150);
   }
+  function nearest(y){
+    var best=0,bd=1e9;
+    for(var i=0;i<n;i++){var d=Math.abs(tops[i]+heights[i]/2-vh/2-y);if(d<bd){bd=d;best=i;}}
+    return best;
+  }
+  /* Bildene følger alltid den ekte scrollen (ingen translate fra JS).
+     Bare vinkel/lysstyrke glattes, så det aldri kan gynge i posisjon. */
   function render(){
-    var target=window.scrollY;
-    cur+=(target-cur)*LERP;
-    if(Math.abs(target-cur)<0.15)cur=target;
-    var lag=target-cur, best=0, bestD=1e9;
+    var y=window.scrollY;
+    sm+=(y-sm)*SMOOTH;
+    if(Math.abs(y-sm)<0.1)sm=y;
     for(var i=0;i<n;i++){
-      var center=tops[i]+heights[i]/2-cur;                 /* senter i viewport */
-      var d=(center-vh/2)/vh;                               /* -1 øverst … +1 nederst */
-      var ad=Math.abs(d); if(ad<bestD){bestD=ad;best=i;}
+      var c=tops[i]+heights[i]/2;
+      var d=(c-sm-vh/2)/vh;
+      var ad=Math.abs(d);
       var rot=Math.max(-40,Math.min(40,-d*K));
-      var op=1-Math.min(ad,1)*0.45;
-      secs[i].style.transform='translate3d(0,'+lag.toFixed(2)+'px,0) perspective('+PERSP+'px) rotateX('+rot.toFixed(2)+'deg)';
-      secs[i].style.opacity=op.toFixed(3);
+      secs[i].style.transform='perspective('+PERSP+'px) rotateX('+rot.toFixed(2)+'deg)';
+      secs[i].style.opacity=(1-Math.min(ad,1)*0.45).toFixed(3);
     }
-    swap(best);                                             /* nærmeste senter = midtlinjen krysser gapet */
-    if(cur!==target)requestAnimationFrame(render);else running=false;
+    swap(nearest(y));
+    if(sm!==y)requestAnimationFrame(render);else running=false;
   }
   function kick(){if(!running){running=true;requestAnimationFrame(render);}}
-  window.addEventListener('scroll',kick,{passive:true});
+
+  /* Rolig "setting" mot nærmeste stein – først når scrollen har stoppet helt */
+  function settle(){
+    if(touching||reduce)return;
+    var y=window.scrollY,k=nearest(y);
+    var targetY=Math.round(tops[k]+heights[k]/2-vh/2);
+    if(Math.abs(targetY-y)>2)window.scrollTo({top:targetY,behavior:'smooth'});
+  }
+  function onScroll(){kick();clearTimeout(idle);idle=setTimeout(settle,180);}
+
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('touchstart',function(){touching=true;clearTimeout(idle);},{passive:true});
+  window.addEventListener('touchend',function(){touching=false;clearTimeout(idle);idle=setTimeout(settle,220);},{passive:true});
+  window.addEventListener('wheel',function(){clearTimeout(idle);},{passive:true});
   window.addEventListener('resize',function(){measure();kick();});
   window.addEventListener('load',function(){measure();kick();});
   measure();kick();
