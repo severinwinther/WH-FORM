@@ -54,7 +54,7 @@ html.arbeider,html.arbeider body{background:#000;}
 body{overflow-x:hidden;}
 .stream{
   --h:74vh;
-  display:flex;flex-direction:column;align-items:center;gap:var(--gap);
+  display:flex;flex-direction:column;align-items:center;gap:2vh;
   padding:calc(50vh - var(--h)/2) 0;
 }
 @supports (height:1svh){.stream{--h:74svh;padding:calc(50svh - var(--h)/2) 0;}}

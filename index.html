@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
@@ -91,6 +91,8 @@
       var d=(c-sm-vh/2)/vh;
       var ad=Math.abs(d);
       var rot=Math.max(-40,Math.min(40,-d*K));
+      var oy=50-50*Math.max(-1,Math.min(1,d*3));           /* tipp rundt kanten som vender mot midten */
+      secs[i].style.transformOrigin='50% '+oy.toFixed(1)+'%';
       secs[i].style.transform='perspective('+PERSP+'px) rotateX('+rot.toFixed(2)+'deg)';
       secs[i].style.opacity=(1-Math.min(ad,1)*0.45).toFixed(3);
     }
