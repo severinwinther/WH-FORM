@@ -49,22 +49,26 @@ ul{list-style:none;margin:0;padding:0;}
 .nav a.current{opacity:.45;}
 
 /* ---------------- STREAM (ARBEIDER) ---------------- */
-/* Fullskjerm-sekvens: bildene står fast og toner over i hverandre, styrt av scroll. */
+/* Sammenhengende kolonne. Bildene bøyes bakover mot kantene (styrt av scroll i JS). */
 html.arbeider,html.arbeider body{background:#000;}
-html.snap{scroll-snap-type:y mandatory;}
-.stage{position:fixed;inset:0;z-index:1;overflow:hidden;background:#000;}
-.shot{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  object-fit:contain;object-position:center;
-  opacity:0;will-change:opacity,transform;
-  -webkit-mask-image:linear-gradient(to right,transparent,#000 10%,#000 90%,transparent),linear-gradient(to bottom,#000 92%,transparent);
-  -webkit-mask-composite:source-in;
-  mask-image:linear-gradient(to right,transparent,#000 10%,#000 90%,transparent),linear-gradient(to bottom,#000 92%,transparent);
-  mask-composite:intersect;
+html.arbeider{scroll-snap-type:y proximity;}
+body{overflow-x:hidden;}
+.stream{
+  --h:74vh;
+  display:flex;flex-direction:column;align-items:center;gap:var(--gap);
+  padding:calc(50vh - var(--h)/2) 0;
 }
-.stream{position:relative;z-index:0;}
-.project{height:100vh;height:100svh;scroll-snap-align:start;scroll-snap-stop:always;}
+@supports (height:1svh){.stream{--h:74svh;padding:calc(50svh - var(--h)/2) 0;}}
+.project{
+  width:100%;height:var(--h);
+  display:flex;align-items:center;justify-content:center;
+  scroll-snap-align:center;
+  will-change:transform,opacity;
+}
+.project img{
+  width:auto;height:100%;
+  max-width:calc(100vw - 2*var(--edge));object-fit:contain;
+}
 
 .ann-fixed{
   position:fixed;left:0;right:0;top:50%;transform:translateY(-50%);
