@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Prosess — WH FORM</title>
+<title>Prosess. WH FORM</title>
 <meta name="description" content="Fra verkstedet til WH FORM: arbeid med naturstein, fra tegning til ferdig gravstein.">
 <meta name="robots" content="noindex, follow">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="WH FORM">
 <meta property="og:locale" content="nb_NO">
-<meta property="og:title" content="Prosess — WH FORM">
+<meta property="og:title" content="Prosess. WH FORM">
 <meta property="og:description" content="Fra verkstedet til WH FORM: arbeid med naturstein, fra tegning til ferdig gravstein.">
 <meta property="og:url" content="https://wh-form.com/prosess.html">
 <meta property="og:image" content="https://wh-form.com/og.jpg">
@@ -57,7 +57,7 @@
     "Monumenter",
     "Naturstein",
     "Granitt",
-    "Marmor"
+    "Kvartsitt"
    ],
    "address": {
     "@type": "PostalAddress",
@@ -85,7 +85,7 @@
 </head>
 <body>
 
-  <h1 style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;">Prosess — WH FORM</h1>
+  <h1 style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;">Prosess. WH FORM</h1>
 
   <!-- MASTHEAD -->
   <header class="masthead">
@@ -109,22 +109,22 @@
   <main class="process">
 
     <section class="proc-item" data-src="video/01.mp4">
-      <div class="proc-media"><div class="ph">Video — landskap 16:9</div></div>
+      <div class="proc-media"><div class="ph">Video, landskap 16:9</div></div>
     </section>
 
     <section class="proc-item" data-src="video/02.mp4">
-      <div class="proc-media"><div class="ph">Video — landskap 16:9</div></div>
+      <div class="proc-media"><div class="ph">Video, landskap 16:9</div></div>
     </section>
 
     <section class="proc-item" data-src="video/03.mp4">
-      <div class="proc-media"><div class="ph">Video — landskap 16:9</div></div>
+      <div class="proc-media"><div class="ph">Video, landskap 16:9</div></div>
     </section>
 
   </main>
 
   <!-- FAST TEKST (som på ARBEIDER): nummer + tittel, byttes når videoen bytter -->
   <div class="ann-fixed" aria-live="polite">
-    <div class="af af-left"><span class="cap af-index">01</span><span class="cap af-title">—</span></div>
+    <div class="af af-left"><span class="cap af-index">01</span><span class="cap af-title"></span></div>
   </div>
 
   <!-- FOOTER BAR -->
@@ -180,7 +180,7 @@
   /* ---------- sett inn video + tittel ---------- */
   items.forEach(function(it,i){
     it.dataset.index=('0'+(i+1)).slice(-2);
-    it.dataset.title=it.dataset.date?it.dataset.date.toUpperCase():'—';
+    it.dataset.title=it.dataset.date?it.dataset.date.toUpperCase():'';
     var src=it.dataset.src; if(!src)return;
     fetch(src,{method:'HEAD'}).then(function(r){
       if(!r.ok)return;                                   /* ingen video ennå: behold plassholder */
